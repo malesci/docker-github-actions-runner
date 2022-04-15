@@ -47,7 +47,7 @@ RUN echo en_US.UTF-8 UTF-8 >> /etc/locale.gen \
     dumb-init \
     google-chrome-stable \
   && apt-get install -yqq unzip \
-  && wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip
+  && wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip \
   && unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/ \
 
 
