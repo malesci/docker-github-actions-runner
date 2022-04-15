@@ -1,4 +1,6 @@
-FROM ubuntu:focal
+#FROM ubuntu:focal
+FROM python:3.9
+
 LABEL maintainer="myoung34@my.apsu.edu"
 
 ARG DUMB_INIT_VERSION="1.2.2"
@@ -16,6 +18,8 @@ RUN echo en_US.UTF-8 UTF-8 >> /etc/locale.gen \
   && apt-get update \
   && apt-get install -y --no-install-recommends gnupg \
   && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ${GIT_CORE_PPA_KEY} \
+  && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+  && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' \
   && apt-get update \
   && apt-get install -y --no-install-recommends \
     curl \
@@ -41,6 +45,12 @@ RUN echo en_US.UTF-8 UTF-8 >> /etc/locale.gen \
     python3-setuptools \
     python3 \
     dumb-init \
+    google-chrome-stable \
+  && apt-get install -yqq unzip \
+  && wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`/chromedriver_linux64.zip
+  && unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/ \
+
+
   && sed -e 's/Defaults.*env_reset/Defaults env_keep = "HTTP_PROXY HTTPS_PROXY NO_PROXY FTP_PROXY http_proxy https_proxy no_proxy ftp_proxy"/' -i /etc/sudoers \
   && echo deb http://ppa.launchpad.net/git-core/ppa/ubuntu $([[ $(grep -E '^ID=' /etc/os-release | sed 's/.*=//g') == "ubuntu" ]] && (grep VERSION_CODENAME /etc/os-release | sed 's/.*=//g') || echo bionic) main>/etc/apt/sources.list.d/git-core.list \
   && apt-get update \
@@ -61,3 +71,5 @@ RUN echo en_US.UTF-8 UTF-8 >> /etc/locale.gen \
   && [[ $(lscpu -J | jq -r '.lscpu[] | select(.field == "Vendor ID:") | .data') == "ARM" ]] && echo "Not installing docker-compose. See https://github.com/docker/compose/issues/6831" || ( curl -sL "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose ) \
   && rm -rf /var/lib/apt/lists/* \
   && rm -rf /tmp/*
+  # set display port to avoid crash
+  ENV DISPLAY=:99
